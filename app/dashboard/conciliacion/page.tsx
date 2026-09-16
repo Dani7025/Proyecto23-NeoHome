@@ -3,132 +3,134 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 
-type Pago = {
+interface ComprobanteRow {
   id: string;
-  monto_extraido_ves: number | null;
-  monto_equivalente_usd: number | null;
-  estado: string;
-  fecha: string;
-  comprobantes: {
-    unidades: {
-      numero_apartamento: string;
-      usuarios: { nombre: string } | null;
-    } | null;
+  imagen_url: string;
+  fecha_carga: string;
+  unidades: {
+    numero_apartamento: string;
+    usuarios: { nombre: string } | null;
   } | null;
-};
+  pagos: {
+    monto_equivalente_usd: number | null;
+    referencia: string | null;
+    estado: string;
+    fecha: string;
+  }[];
+}
 
-const ESTADO_STYLES: Record<string, string> = {
-  conciliado: 'bg-green-100 dark:bg-green-950 text-green-800 dark:text-green-400 border-green-200 dark:border-green-800',
-  discrepancia: 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-400 border-amber-200 dark:border-amber-800',
-  en_revision: 'bg-red-100 dark:bg-red-950 text-red-800 dark:text-red-400 border-red-200 dark:border-red-800',
-};
-
-const ESTADO_LABEL: Record<string, string> = {
-  conciliado: '✓ Conciliado',
-  discrepancia: 'Discrepancia',
-  en_revision: '⚠ En revisión',
+const ESTADOS: Record<string, { label: string; classes: string }> = {
+  conciliado: { label: 'Conciliado', classes: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' },
+  discrepancia: { label: 'Discrepancia', classes: 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800' },
+  en_revision: { label: 'En Revisión', classes: 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800' },
+  pendiente: { label: 'Pendiente', classes: 'bg-slate-100 dark:bg-slate-700/60 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600' },
 };
 
 export default function ConciliacionPage() {
-  const [pagos, setPagos] = useState<Pago[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [filas, setFilas] = useState<ComprobanteRow[]>([]);
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('todos');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function cargar() {
-      const { data, error } = await supabase
-        .from('pagos')
+      const { data } = await supabase
+        .from('comprobantes')
         .select(`
-          id, monto_extraido_ves, monto_equivalente_usd, estado, fecha,
-          comprobantes (
-            unidades ( numero_apartamento, usuarios ( nombre ) )
-          )
+          id,
+          imagen_url,
+          fecha_carga,
+          unidades ( numero_apartamento, usuarios ( nombre ) ),
+          pagos ( monto_equivalente_usd, referencia, estado, fecha )
         `)
-        .order('fecha', { ascending: false });
+        .order('fecha_carga', { ascending: false });
 
-      if (!error && data) setPagos(data as unknown as Pago[]);
+      setFilas((data as unknown as ComprobanteRow[]) || []);
       setLoading(false);
     }
     cargar();
   }, []);
 
-  const filtrados = pagos.filter((p) => {
-    const unidad = p.comprobantes?.unidades?.numero_apartamento || '';
-    const coincideBusqueda = unidad.toLowerCase().includes(busqueda.toLowerCase());
-    const coincideEstado = filtroEstado === 'todos' || p.estado === filtroEstado;
-    return coincideBusqueda && coincideEstado;
+  const filtradas = filas.filter((f) => {
+    const estado = f.pagos[0]?.estado ?? 'pendiente';
+    const apto = (f.unidades?.numero_apartamento ?? '').toString();
+    return apto.includes(busqueda) && (filtroEstado === 'todos' || estado === filtroEstado);
   });
+
+  if (loading) {
+    return <p className="text-slate-500 dark:text-slate-400">Cargando...</p>;
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Conciliación de Pagos</h2>
-        <div className="flex space-x-2">
+        <div className="flex gap-3">
           <input
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             placeholder="Buscar unidad..."
-            className="px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white rounded-lg outline-none focus:border-teal-500 w-40 sm:w-64"
+            className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white text-sm outline-none focus:ring-2 focus:ring-teal-500"
           />
           <select
             value={filtroEstado}
             onChange={(e) => setFiltroEstado(e.target.value)}
-            className="px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+            className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white text-sm outline-none focus:ring-2 focus:ring-teal-500"
           >
             <option value="todos">Todos los estados</option>
-            <option value="en_revision">En revisión</option>
+            <option value="conciliado">Conciliado</option>
             <option value="discrepancia">Discrepancia</option>
-            <option value="conciliado">Conciliados</option>
+            <option value="en_revision">En Revisión</option>
+            <option value="pendiente">Pendiente</option>
           </select>
         </div>
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400">
-            <tr>
-              <th className="px-6 py-3 font-medium">Unidad</th>
-              <th className="px-6 py-3 font-medium">Residente</th>
-              <th className="px-6 py-3 font-medium">Monto (VES)</th>
-              <th className="px-6 py-3 font-medium">Equiv. (USD)</th>
-              <th className="px-6 py-3 font-medium">Fecha</th>
-              <th className="px-6 py-3 font-medium">Estado</th>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-700">
+              <th className="px-5 py-3 font-medium">Unidad</th>
+              <th className="px-5 py-3 font-medium">Residente</th>
+              <th className="px-5 py-3 font-medium">Monto</th>
+              <th className="px-5 py-3 font-medium">Fecha</th>
+              <th className="px-5 py-3 font-medium">Estado</th>
+              <th className="px-5 py-3 font-medium">Comprobante</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-            {loading && (
-              <tr><td colSpan={6} className="px-6 py-10 text-center text-slate-400">Cargando...</td></tr>
-            )}
-            {!loading && filtrados.length === 0 && (
-              <tr><td colSpan={6} className="px-6 py-10 text-center text-slate-400 dark:text-slate-500">
-                No hay pagos que coincidan.
-              </td></tr>
-            )}
-            {filtrados.map((p) => (
-              <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/40">
-                <td className="px-6 py-4 font-medium text-slate-800 dark:text-slate-100">
-                  {p.comprobantes?.unidades?.numero_apartamento ?? '—'}
-                </td>
-                <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
-                  {p.comprobantes?.unidades?.usuarios?.nombre ?? '—'}
-                </td>
-                <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
-                  {p.monto_extraido_ves ? `Bs. ${p.monto_extraido_ves}` : '--'}
-                </td>
-                <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
-                  {p.monto_equivalente_usd ? `$${p.monto_equivalente_usd}` : '--'}
-                </td>
-                <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
-                  {new Date(p.fecha).toLocaleDateString('es-VE')}
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${ESTADO_STYLES[p.estado]}`}>
-                    {ESTADO_LABEL[p.estado]}
-                  </span>
+          <tbody>
+            {filtradas.map((f) => {
+              const pago = f.pagos[0];
+              const estado = pago?.estado ?? 'pendiente';
+              const cfg = ESTADOS[estado] ?? ESTADOS.pendiente;
+              return (
+                <tr key={f.id} className="border-b border-slate-100 dark:border-slate-700 last:border-0">
+                  <td className="px-5 py-3 text-slate-700 dark:text-slate-200">Apt {f.unidades?.numero_apartamento ?? '-'}</td>
+                  <td className="px-5 py-3 text-slate-700 dark:text-slate-200">{f.unidades?.usuarios?.nombre ?? '-'}</td>
+                  <td className="px-5 py-3 text-slate-700 dark:text-slate-200">
+                    {pago?.monto_equivalente_usd != null ? `$${pago.monto_equivalente_usd.toFixed(2)}` : '—'}
+                  </td>
+                  <td className="px-5 py-3 text-slate-700 dark:text-slate-200">
+                    {new Date(pago?.fecha ?? f.fecha_carga).toLocaleDateString()}
+                  </td>
+                  <td className="px-5 py-3">
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${cfg.classes}`}>{cfg.label}</span>
+                  </td>
+                  <td className="px-5 py-3">
+                    <a href={f.imagen_url} target="_blank" rel="noreferrer" className="text-teal-600 dark:text-teal-400 text-xs font-medium hover:underline">
+                      Ver comprobante
+                    </a>
+                  </td>
+                </tr>
+              );
+            })}
+            {filtradas.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-5 py-8 text-center text-slate-400 dark:text-slate-500">
+                  No hay comprobantes que coincidan.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
