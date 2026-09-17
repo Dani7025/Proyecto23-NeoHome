@@ -1,0 +1,136 @@
+{
+  "name": "NeoHome - Fase 2 Completo",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "conciliar",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook1",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 300],
+      "webhookId": "conciliar"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "configuracion",
+        "filters": {}
+      },
+      "id": "supa-tasa",
+      "name": "Get Tasa BCV",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "PLACEHOLDER",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "alicuotas",
+        "filters": {
+          "unidad_id": "={{ $('Webhook').item.json.body.unidad_id }}"
+        },
+        "options": {
+          "order": "fecha_generacion.desc",
+          "limit": 1
+        }
+      },
+      "id": "supa-alicuota",
+      "name": "Get Alicuota",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [700, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "PLACEHOLDER",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Webhook').item.json.body.imagen_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "http-img",
+      "name": "Descargar Imagen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [950, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst binaryData = await this.helpers.getBinaryDataBuffer(0, 'data');\nconst base64String = binaryData.toString('base64');\nreturn [{ json: { mimeType: item.binary.data.mimeType || 'image/jpeg', base64: base64String } }];"
+      },
+      "id": "code-b64",
+      "name": "Convertir a Base64",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1200, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=AIzaSyCqCjj6oHVLftk4ov4dhZyRq6Q-JioB7Ag",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contents: [{ parts: [{ text: 'Analiza esta imagen de comprobante de pago venezolano. Extrae monto, fecha y referencia. Devuelve SOLO este JSON sin texto adicional: {\"monto\": 0.00, \"fecha\": \"YYYY-MM-DD\", \"referencia\": \"string\"}' }, { inline_data: { mime_type: $json.mimeType, data: $json.base64 } }] }] }) }}",
+        "options": {}
+      },
+      "id": "http-gemini",
+      "name": "Gemini API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const SUPABASE_URL = 'https://sulxmylsgaemqfgfltkv.supabase.co';\nconst SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN1bHhteWxzZ2FlbXFmZ2xmdGt2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4OTIxNDQwMywiZXhwIjoyMTA0NzkwNDAzfQ.t1NnbFcRxvhw0fZ2y-cx95QXdRGMOBV0zomPvQlTjk8';\n\nconst item = $input.first();\nconst rawText = item.json.candidates[0].content.parts[0].text;\nlet parsed = { monto: null, fecha: null, referencia: null };\ntry {\n  parsed = typeof rawText === 'string' ? JSON.parse(rawText) : rawText;\n} catch (e) {}\n\nconst tasa = parseFloat($('Get Tasa BCV').item.json.valor || '0');\nconst alicuotaData = $('Get Alicuota').all();\nconst alicuota = alicuotaData.length > 0 ? alicuotaData[0].json : null;\nconst alicuotaMonto = alicuota ? parseFloat(alicuota.monto_unidad || '0') : 0;\nconst montoVes = parsed.monto != null ? parseFloat(parsed.monto) : null;\nconst montoUsd = montoVes && tasa > 0 ? parseFloat((montoVes / tasa).toFixed(2)) : null;\n\nconst comprobanteId = $('Webhook').item.json.body.comprobante_id;\nconst unidadId = $('Webhook').item.json.body.unidad_id;\nconst alicuotaId = alicuota ? alicuota.id : null;\n\nlet estado = 'en_revision';\nlet mensaje = '';\n\nif (montoVes == null || tasa === 0) {\n  estado = 'en_revision';\n  mensaje = 'No pudimos leer el monto del comprobante. Quedo en revision manual.';\n} else if (Math.abs(montoUsd - alicuotaMonto) < 1) {\n  estado = 'conciliado';\n  mensaje = 'Pago conciliado. El monto coincide con tu alicuota.';\n} else {\n  estado = 'discrepancia';\n  mensaje = 'Discrepancia de monto. Tu pago quedo en revision manual.';\n}\n\nconst headers = { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };\n\n// 1. Insertar pago\nconst pagoBody = {\n  comprobante_id: comprobanteId,\n  alicuota_id: alicuotaId,\n  monto_extraido_ves: montoVes,\n  tasa_bcv: tasa,\n  monto_equivalente_usd: montoUsd,\n  referencia: parsed.referencia,\n  estado: estado\n};\nawait this.helpers.httpRequest({ method: 'POST', url: SUPABASE_URL + '/rest/v1/pagos', headers: headers, body: pagoBody, json: true });\n\n// 2. Actualizar comprobante\nawait this.helpers.httpRequest({ method: 'PATCH', url: SUPABASE_URL + '/rest/v1/comprobantes?id=eq.' + comprobanteId, headers: headers, body: { estado_extraccion: estado === 'en_revision' ? 'error_lectura' : 'extraido' }, json: true });\n\n// 3. Si conciliado, descontar saldo\nif (estado === 'conciliado' && alicuotaMonto > 0) {\n  const unidRes = await this.helpers.httpRequest({ method: 'GET', url: SUPABASE_URL + '/rest/v1/unidades?id=eq.' + unidadId + '&select=saldo_deudor', headers: headers, json: true });\n  const saldoActual = unidRes[0]?.saldo_deudor || 0;\n  const nuevoSaldo = Math.max(0, saldoActual - alicuotaMonto);\n  await this.helpers.httpRequest({ method: 'PATCH', url: SUPABASE_URL + '/rest/v1/unidades?id=eq.' + unidadId, headers: headers, body: { saldo_deudor: nuevoSaldo }, json: true });\n}\n\nreturn [{ json: { estado: estado, monto_extraido: montoVes, monto_usd: montoUsd, alicuota_monto: alicuotaMonto, referencia: parsed.referencia, fecha: parsed.fecha, mensaje: mensaje } }];"
+      },
+      "id": "code-final",
+      "name": "Procesar y Guardar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1700, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "respond",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1950, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {"main": [[{"node": "Get Tasa BCV", "type": "main", "index": 0}]]},
+    "Get Tasa BCV": {"main": [[{"node": "Get Alicuota", "type": "main", "index": 0}]]},
+    "Get Alicuota": {"main": [[{"node": "Descargar Imagen", "type": "main", "index": 0}]]},
+    "Descargar Imagen": {"main": [[{"node": "Convertir a Base64", "type": "main", "index": 0}]]},
+    "Convertir a Base64": {"main": [[{"node": "Gemini API", "type": "main", "index": 0}]]},
+    "Gemini API": {"main": [[{"node": "Procesar y Guardar", "type": "main", "index": 0}]]},
+    "Procesar y Guardar": {"main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]}
+  },
+  "settings": {},
+  "pinData": {}
+}

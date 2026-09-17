@@ -1,0 +1,68 @@
+{
+  "name": "Test Gemini Imagen v2",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger1",
+      "name": "When clicking Test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://sulxmylsgaemqfglftkv.supabase.co/storage/v1/object/public/comprobantes/0afa6838-266e-41b2-a2bb-dd310a682b3d-1789593575475-WhatsApp%20Image%202026-09-16%20at%206.58.38%20AM.jpeg",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "http1",
+      "name": "Descargar Imagen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst binary = item.binary.data;\nreturn [{\n  json: {\n    mimeType: binary.mimeType || 'image/jpeg',\n    base64: binary.data\n  }\n}];"
+      },
+      "id": "code1",
+      "name": "Convertir a Base64",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=AIzaSyCqCjj6oHVLftk4ov4dhZyRq6Q-JioB7Ag",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contents: [{ parts: [{ text: 'Eres un asistente experto en leer comprobantes de pago venezolanos. Analiza la imagen y extrae EXACTAMENTE estos 3 campos. Devuelve SOLO un objeto JSON valido sin texto adicional: {\"monto\": numero decimal sin comas, \"fecha\": \"YYYY-MM-DD\", \"referencia\": \"string\"}. Reglas: si un campo no es legible devuelve null. El monto debe ser numero. NO inventes datos.' }, { inline_data: { mime_type: $json.mimeType, data: $json.base64 } }] }], generationConfig: { responseMimeType: \"application/json\" } }) }}",
+        "options": {}
+      },
+      "id": "http2",
+      "name": "Gemini API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [950, 300]
+    }
+  ],
+  "connections": {
+    "When clicking Test": {
+      "main": [[{"node": "Descargar Imagen", "type": "main", "index": 0}]]
+    },
+    "Descargar Imagen": {
+      "main": [[{"node": "Convertir a Base64", "type": "main", "index": 0}]]
+    },
+    "Convertir a Base64": {
+      "main": [[{"node": "Gemini API", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {},
+  "pinData": {}
+}
