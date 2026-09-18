@@ -7,7 +7,7 @@ import { supabase } from '../../lib/supabase';
 const WEBHOOK_URL = 'https://dani0725.app.n8n.cloud/webhook/conciliar';
 
 type Resultado = {
-  estado: 'conciliado' | 'discrepancia' | 'en_revision';
+  estado: 'conciliado' | 'discrepancia' | 'en_revision' | 'abono_parcial';
   monto_extraido?: number | null;
   monto_usd?: number | null;
   referencia?: string | null;
@@ -107,7 +107,7 @@ export default function ReportarPagoPage() {
     setSubiendo(false);
   }
 
-  // Vista de resultado (3 escenarios)
+  // Vista de resultado (4 escenarios)
   if (resultado) {
     const estilos = {
       conciliado: {
@@ -115,6 +115,12 @@ export default function ReportarPagoPage() {
         texto: 'text-green-700 dark:text-green-400',
         emoji: '✅',
         titulo: '¡Pago conciliado!',
+      },
+      abono_parcial: {
+        bg: 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800',
+        texto: 'text-blue-700 dark:text-blue-400',
+        emoji: '💰',
+        titulo: 'Abono recibido',
       },
       discrepancia: {
         bg: 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800',
