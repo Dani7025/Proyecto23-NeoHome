@@ -16,7 +16,7 @@ export default function AlicuotasPage() {
   const [generando, setGenerando] = useState(false);
   const [error, setError] = useState('');
 
-  async function generarAlicuotas() {
+   async function generarAlicuotas() {
     setError('');
     const monto = Number(montoTotal);
     if (!monto || monto <= 0) {
@@ -27,7 +27,7 @@ export default function AlicuotasPage() {
 
     const { data: unidades, error: unidadesError } = await supabase
       .from('unidades')
-      .select('id, numero_apartamento, coeficiente');
+      .select('id, numero_apartamento, coeficiente, saldo_deudor');
 
     if (unidadesError || !unidades || unidades.length === 0) {
       setError('No se pudieron cargar las unidades.');
@@ -51,6 +51,15 @@ export default function AlicuotasPage() {
       setError('Error al generar alícuotas: ' + insertError.message);
       setGenerando(false);
       return;
+    }
+
+    // Sumar cada alícuota al saldo deudor de su unidad
+    for (const u of unidades) {
+      const montoAsignado = Number((monto * u.coeficiente).toFixed(2));
+      await supabase
+        .from('unidades')
+        .update({ saldo_deudor: Number((u.saldo_deudor + montoAsignado).toFixed(2)) })
+        .eq('id', u.id);
     }
 
     setDistribucion(

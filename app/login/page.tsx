@@ -8,7 +8,7 @@ import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('admin@neohome.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
