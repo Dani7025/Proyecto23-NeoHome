@@ -143,11 +143,6 @@ export default function LoginPage() {
           />
           <div className="hidden lg:block absolute -right-24 top-1/3 w-72 h-72 rounded-full border border-white/10" />
           <div className="hidden lg:block absolute -right-10 top-[calc(33%+56px)] w-40 h-40 rounded-full border border-white/10" />
-          <div className="hidden lg:flex absolute bottom-16 left-12 gap-3">
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="w-14 h-20 rounded-lg border border-white/10 bg-white/5" />
-            ))}
-          </div>
         </div>
 
         <div className="relative flex flex-col gap-8 lg:gap-10">
