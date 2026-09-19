@@ -223,3 +223,51 @@ NINGUNO. Se conservan exactamente: `WEBHOOK_URL`, `handleUpload` completo (auth,
 Etapa 4 — Administrador
 
 ---
+
+## 2026-09-19 — Etapa 4A: Layout Administrador
+
+### Objetivo
+Rediseñar visualmente el layout administrativo como un centro de control financiero SaaS premium, conservando toda la lógica.
+
+### Archivos modificados
+- app/dashboard/layout.tsx
+
+### Cambios visuales
+- Rediseño del sidebar: fondo degradado sofisticado `navy→teal` (de `navy-800` a `teal-900`, no una barra negra genérica), con marca Neohome bien integrada (logo con dot de estado, nombre y tagline "Gestión Financiera Residencial") y encabezado con jerarquía y espacio.
+- Nueva navegación visual: agrupada en "Principal" (Resumen, Conciliación, Morosidad) y "Administración" (Alícuotas, Residentes) con labels en mayúsculas espaciadas; sin agregar rutas.
+- Nuevos estados activos: pill con fondo `bg-white/10`, ring sutil, icono destacado en `lavender`, indicador lateral (barra vertical lavanda) y `aria-current`.
+- Nueva iconografía: se reemplazaron los emojis (📊 🧾 ⚠️ 🧮 👥 🚪 👤) por SVG inline consistentes (grid, file-check, trending-down, calculator, users, power, menu, close, chevron, camera, phone, check). No se instaló librería.
+- Rediseño del header: barra superior con `backdrop-blur`, título de la sección activa derivado de `NAV_ITEMS`, divisor vertical, ThemeToggle integrado y botón de perfil refinado (nombre + rol + avatar con anillo e inicial en gradiente `brand→navy` como fallback).
+- Rediseño del perfil: dropdown premium con avatar grande, hover de cámara para cambiar foto, nombre, rol, campo de teléfono agrupado con icono, foco con ring de marca, botón "Guardar cambios" en `#463181` y feedback "Datos actualizados" con icono de check. Se conserva el mecanismo original del input de archivo.
+- Cerrar sesión: discreto en el footer del sidebar, separado del menú con borde, icono de poder y rojo solo en interacción (hover).
+- Mejoras responsive: en desktop el sidebar es fijo (`lg`), en mobile/mobile-tablet se convierte en drawer deslizante con overlay oscuro `backdrop-blur`, botón de menú en el header y cierre al navegar o tocar afuera.
+- Mejor integración de dark mode en todos los componentes nuevos con variantes `dark:`.
+- Microinteracciones suaves: transiciones de color y elevación en la navegación, apertura del perfil con `fade-in` y `shadow-pop`.
+- Accesibilidad: `aria-label`, `aria-expanded`, `aria-current` en navegación, botones con `focus-visible:ring`.
+
+### Cambios funcionales
+NINGUNO. Autenticación, consulta de `usuarios`, validación de rol `admin`, `setNombre`, logout (`signOut` + `router.push('/')`), selección de avatar, panel de perfil, teléfono, guardado de perfil, mensaje "Datos actualizados", ThemeToggle, `pathname` para estado activo, `NAV_ITEMS` (hrefs y labels) y `{children}` permanecen idénticos. Solo cambió el JSX visual y las clases. Se añadió únicamente un estado de UI (`menuOpen`) para el drawer móvil, sin afectar la lógica existente.
+
+### Validaciones
+- Autenticación: `getUser` y redirección intactas.
+- Rol administrador: validación `perfil.rol !== 'admin'` intacta.
+- Navegación: las 5 rutas del sidebar permanecen y `pathname === item.href` sigue determinando el estado activo.
+- Logout: `Cerrar sesión` conserva la misma función.
+- Perfil: panel funcional con nombre, rol, avatar, teléfono y Guardar cambios.
+- Avatar: subir/cambiar foto conserva el mecanismo (FileReader + input oculto).
+- Guardar perfil: `handleSaveProfile` y setTimeout intactos.
+- ThemeToggle: completamente funcional e integrado al header.
+- Desktop: sidebar fijo de 288px con navegación agrupada.
+- Tablet/Mobile: drawer deslizante accesible, sin overflow horizontal, perfil y logout funcionales.
+- Dark mode: variantes `dark:` coherentes en sidebar, header, perfil y menú.
+- `npm run build` exitoso, TypeScript sin errores.
+
+### Observaciones
+- Los `�` que puedan verse en consola al hacer grep son un artefacto de codificación de PowerShell; el archivo está en UTF-8 y los acentos se confirmaron correctos.
+- El título del header (sección actual) se deriva de los labels existentes de `NAV_ITEMS`; no se añadió contenido nuevo.
+- El dot decorativo junto al logo y el agrupamiento por secciones son solo presentación.
+
+### Pendientes
+Etapa 4B — Dashboard financiero
+
+---
