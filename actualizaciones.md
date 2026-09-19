@@ -332,3 +332,58 @@ NINGUNO. Estados, `cargarTasa`, consultas de `configuracion`/`pagos`/`unidades`/
 Etapa 4C — Conciliación de pagos
 
 ---
+
+## 2026-09-19 — Etapa 4C: Conciliación de Pagos
+
+### Objetivo
+Rediseñar visualmente la experiencia de conciliación como un centro profesional de revisión y validación de comprobantes, sin cambiar la lógica financiera.
+
+### Archivo modificado
+- app/dashboard/conciliacion/page.tsx
+
+### Cambios visuales
+- Rediseño de encabezado: kicker "Centro de revisión", título "Conciliación de pagos" y descripción del propósito de la sección.
+- Rediseño de filtros: búsqueda con icono SVG y focus/ring de marca; select con icono de chevron y `appearance-none`; ambos con `rounded-xl`, borde sutil y transiciones.
+- Franja de resumen derivada del array cargado: pill principal con total de comprobantes y pills por estado (solo estados presentes) con punto de color; sin métricas nuevas.
+- Rediseño de tabla: encabezado en mayúsculas espaciadas, filas con `py-4` y hover sutil, unidad como pill ("Apt XX" con icono), residente con avatar de inicial en gradiente `brand→navy`, monto en negrita `tabular-nums`, fecha formateada `es-VE`, badge de estado con punto de color, "Ver comprobante" como enlace con icono de documento y "Resolver" como botón de marca.
+- Mejora de badges: semántica visual corregida — conciliado (verde), abono_parcial (royal), discrepancia (ámbar), en_revision (ámbar/advertencia), rechazado (rojo), pendiente (gris). Los valores de estado no cambiaron (antes en el código `en_revision` se mostraba en rojo y `rechazado` en gris; corrección solo de presentación).
+- Mejora de acciones: "Resolver" como botón `brand` con icono; "Ver comprobante" con ícono y `target="_blank"`.
+- Rediseño del modal en secciones: A) encabezado sticky con título y contexto "Apt XX · Residente"; B) visor del comprobante con marco, imagen a ancho y enlace "Abrir comprobante en otra pestaña"; C) ficha de datos del pago (Unidad, Residente, Monto detectado, Referencia, Saldo actual, Estado actual con badge); D) "Mensaje del sistema" en zona diferenciada con icono; E) advertencia financiera ámbar ("Si concilias, se descontará $X del saldo..."); F) acciones: Rechazar (outline rojo, secundaria) y "Marcar como Conciliado" (`#463181`, principal), con spinner "Procesando..." mientras `processing`.
+- Cierre del modal: botón X con SVG y click fuera, respetando `!processing`.
+- Empty state premium con icono, mensaje original y explicación breve.
+- Responsive: tabla con scroll horizontal (`overflow-x-auto`, `min-w-[900px]`) en mobile/tablet sin perder información; modal ocupa el viewport con scroll interno y botones apilados en mobile.
+- Dark mode: superficies `dark:` diferenciadas en tabla, filtros, badges y modal.
+- Iconografía: SVG inline (search, chevron, home, file-text, external-link, x, check, alert-triangle, sparkles, inbox, spinner) en lugar de la "✕" y emojis.
+
+### Cambios funcionales
+NINGUNO. `cargar()`, `handleResolver()` (conciliado: pago→conciliado + mensaje, comprobante→extraido, descuento de saldo con `Math.max(0, ...)`; rechazado: pago→rechazado + mensaje, comprobante→rechazado, sin tocar saldo), `puedeResolver`, `setSelected`, `setProcessing`, `setLoading`, `busqueda/setBusqueda`, `filtroEstado/setFiltroEstado`, el filtro `filtradas`, la reload post-resolución y el cierre con `!processing` permanecen idénticos. Solo cambió el JSX visual y las clases.
+
+### Lógica financiera preservada
+- Conciliación: mismo pago actualizado, mismo comprobante actualizado, mismo cálculo de saldo y misma unidad actualizada.
+- Rechazo: mismo pago actualizado, mismo comprobante actualizado, saldo NO alterado.
+
+### Validaciones
+- Búsqueda: filtra por unidad (mismo `apto.includes(busqueda)`).
+- Filtro por estado: mismo `filtroEstado`.
+- Abrir comprobante: `href={imagen_url}` con `target="_blank"`.
+- Resolver: abre el modal con `setSelected(f)`.
+- Conciliar: `handleResolver('conciliado')` con descuento de saldo.
+- Rechazar: `handleResolver('rechazado')` sin modificar saldo.
+- Processing: spinner en ambos botones, `disabled`, sin cierre accidental (`!processing`).
+- Cierre de modal: X y click fuera con `stopPropagation`.
+- Empty state: mensaje "No hay comprobantes que coincidan." conservado.
+- Desktop: tabla completa con acción visible.
+- Tablet/Mobile: scroll horizontal de tabla, modal usable, botones accesibles.
+- Light mode / Dark mode: contrastes y superficies correctas.
+- `npm run build` exitoso, TypeScript sin errores.
+
+### Observaciones
+- Los conteos del resumen se derivan directamente de `filas` (array ya cargado), sin nuevas consultas ni datos ficticios.
+- Se corrigió solo la presentación de `en_revision` y `rechazado` (valores lógicos intactos).
+- Se agregó `dot` como campo visual del mapa de estados.
+- El archivo se construyó en partes por límite de tamaño del editor; el resultado compilado es único y correcto.
+
+### Pendientes
+Etapa 4D — Morosidad
+
+---
