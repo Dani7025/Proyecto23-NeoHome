@@ -498,3 +498,62 @@ NINGUNO. `generarAlicuotas()` permanece byte a byte idéntico: validación de mo
 
 ### Pendientes
 Etapa 4F — Gestión de Residentes
+
+---
+
+## 2026-09-19 — Etapa 4F: Gestión de Residentes
+
+### Objetivo
+Rediseñar visualmente la experiencia de creación de residentes.
+
+### Archivo modificado
+- app/dashboard/residentes/page.tsx
+
+### Cambios visuales
+- Nuevo encabezado: kicker "Gestión de cuentas", título "Registrar residente" y descripción contextual "Añade un nuevo residente y asígnalo a una unidad disponible."
+- Nueva composición del formulario: tarjeta premium (`rounded-2xl`, borde sutil, `shadow-card`, padding generoso) en lugar de la card genérica con lista de inputs.
+- Agrupación de información en 3 secciones numeradas visualmente con iconos de marca: "Información del residente" (usuario), "Credenciales de acceso" (llave), "Asignación de unidad" (propiedad), separadas por divisores finos.
+- Rediseño de inputs: labels en mayúsculas espaciadas, iconos SVG dentro del campo, `py-3`, `rounded-xl`, foco con ring de marca, placeholders elegantes; nombre y email en dos columnas en sm+.
+- Rediseño del select: `appearance-none` con icons de propiedad a la izquierda y chevron a la derecha, altura cómoda, foco con ring de marca; todas las opciones reales conservadas.
+- Nota de contraseña: el texto "Mínimo 6 caracteres. Compártela con el residente." se conserva y ahora se presenta en una caja informativa elegante con icono (no sustituido).
+- Empty state de unidades: el mensaje "No hay unidades libres. Todas están asignadas." se conserva y se muestra en una caja ámbar informativa con icono.
+- Resumen visual derivado: antes del botón aparece una mini ficha calculada a partir de los valores recién introducidos (Residente / Unidad), puramente visual y sin nueva lógica (se muestra u oculta según haya datos).
+- Rediseño de CTA: botón `#463181` (brand) de ancho completo con icono de usuario-plus, hover/elevación, focus visible; en loading `disabled` + spinner + "Creando...".
+- Mejoras de éxito: el mensaje entregado por la API se muestra en una alerta esmeralda premium con icono de check (texto intacto).
+- Mejoras de error: alerta roja premium con icono de alerta y `role="alert"` (mensaje intacto).
+- Responsive: campos a ancho completo en mobile, CTA fácil de tocar, sin overflow horizontal.
+- Dark mode: surfaces `dark:` diferenciadas en card, secciones, inputs, select y alertas.
+- Nueva iconografía: SVG inline (usuario, correo, llave, propiedad, chevron, usuario-plus, info, check, alerta, spinner) — sin emojis ni librerías.
+
+### Cambios funcionales
+NINGUNO. `cargarUnidades()` (`.from('unidades').select('id, numero_apartamento, usuario_id').is('usuario_id', null).order('numero_apartamento')`) y `handleSubmit()` (POST a `/api/admin/crear-residente` con headers y payload `{ nombre, email, password, numero_apartamento }` iguales, manejo de respuesta, estados y limpieza idénticos) permanecen byte a byte idénticos. Verificado por hunks de `git diff` (ningún hunk toca las líneas de esas funciones; solo añade iconos y cambia el JSX de render).
+
+### Lógica preservada
+- Consulta de unidades libres (tabla `unidades`, filtro `usuario_id IS NULL`, orden por `numero_apartamento`)
+- POST a /api/admin/crear-residente (método, headers, endpoint idénticos)
+- Payload original (`nombre`, `email`, `password`, `numero_apartamento`)
+- Estados existentes (`nombre`, `email`, `password`, `apartamento`, `unidades`, `enviando`, `mensaje`, `error`)
+- Limpieza del formulario tras éxito (mismo momento y campos)
+- Mensajes de éxito/error (textos y prefijo "✓ " intactos)
+
+### Validaciones
+- Formulario: nombre, email, contraseña y apartamento mantienen sus `required`, tipos y handlers originales.
+- Select: muestra únicamente las unidades libres.
+- Unidades libres: carga real contra Supabase sin cambios.
+- Sin unidades: condición `unidades.length === 0` e información conservadas.
+- Submit: `type="submit"`, `onSubmit={handleSubmit}` y `disabled={enviando}` iguales.
+- Loading: `disabled` + spinner + "Creando...".
+- Error: alerta roja premium con el mismo mensaje.
+- Éxito: alerta esmeralda premium con el mismo mensaje de la API.
+- Responsive: desktop/laptop/tablet/mobile sin overflow horizontal.
+- Dark mode: contrastes, jerarquía y legibilidad correctos.
+- `npm run build` exitoso, TypeScript sin errores.
+
+### Observaciones
+- El resumen visual "Residente / Unidad" se deriva únicamente del estado existente; no valida, no bloquea el submit y no es un segundo formulario.
+- No se añadieron funcionalidades: ni editar/eliminar residentes, tabla de residentes, búsqueda, import/export, envío de correos, avatares ni nuevos roles.
+- La API `/api/admin/crear-residente` y Supabase no fueron modificados.
+- Se conservó la estructura original sin refactorizar la lógica.
+
+### Pendientes
+Etapa 5 — Auditoría visual final
