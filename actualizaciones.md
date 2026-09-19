@@ -85,3 +85,50 @@ NINGUNO. Se conservaron los enlaces a `/login`, el ThemeToggle y el Logo. No hay
 - Revisar en etapa 2 que el botón de acceso móvil del header cumpla la misma función que el de escritorio.
 
 ---
+
+## 2026-09-19 — Etapa 2: Login
+
+### Objetivo
+Rediseño visual de la pantalla de acceso.
+
+### Archivos modificados
+- app/login/page.tsx
+- actualizaciones.md (esta entrada)
+
+### Cambios visuales
+- Nueva composición dividida en dos zonas en desktop:
+  - Panel izquierdo de branding con gradiente `brand → navy`, glows radiales sutiles de lavanda y teal, geometría abstracta residencial (círculos concéntricos y bloque de "ventanas") y alturas plenas.
+  - Panel derecho con el formulario de acceso sobre tarjeta blanca.
+- En mobile la pantalla se apila en una sola columna: branding compacto arriba y formulario prioritario debajo, sin overflow horizontal.
+- Curso: branding izquierdo con logo NeoHome, tagline "Gestión Financiera Residencial", titular "Tu condominio, bajo control.", párrafo institucional y lista de 3 capacidades reales de la plataforma (conciliación IA, control de morosidad, alícuotas por coeficiente) con iconos SVG.
+- Formulario premium: inputs con altura cómoda (`py-3`), radios `rounded-xl`, iconos SVG de correo/candado dentro del input, labels claras, foco con ring `brand` visible y transición sutil.
+- Botón mostrar/ocultar contraseña reemplazado por iconos SVG (ojo / ojo tachado) que controlan exactamente el mismo estado `showPassword`.
+- Botón "Iniciar sesión" ahora con color de marca púrpura `#463181`, hover/active más profundos, estados disabled y loading (spinner SVG + "Ingresando...").
+- Mensaje de error convertido en alerta visual elegante: icono de alerta SVG, fondo rojo sutil, borde y texto legible. El texto del error no cambia.
+- Texto de nota inferior en el formulario ("Acceso para administradores y residentes de NeoHome") reemplaza al contenido plano previo.
+- Link "Volver" estilizado como píldora translúcida sobre el gradiente, accesible en desktop y mobile.
+- Animación de entrada `fade-in-up` para la tarjeta del formulario.
+- Eliminados todos los emojis y el botón textual "Ver/Ocultar".
+
+### Cambios funcionales
+NINGUNO. `signInWithPassword`, consulta de la tabla `usuarios`, validación de rol, redirección según rol, manejo de errores, estados `loading`/`showPassword`, navegación y rutas permanecen idénticas. Solo cambió el JSX visual y las clases.
+
+### Validaciones
+- `npm run build` exitoso, TypeScript sin errores.
+- Login: se preservó la lógica completa del formulario.
+- Error: la alerta muestra el texto original con nueva presentación visual.
+- Loading: el botón conserva `disabled` + texto "Ingresando..." con spinner.
+- Mostrar/ocultar contraseña: sigue alternando el `type` del input vía `showPassword`.
+- Responsive: grilla 2 columnas en desktop, apilado en mobile/tablet sin desbordes; controles (Volver, ThemeToggle) accesibles en todos los tamaños.
+- Light mode: panel claro de formulario sobre fondo `slate-50`.
+- Dark mode: panel oscuro en formulario y variantes `dark:` en toda la pantalla; el panel de branding mantiene su identidad en ambos modos.
+- Navegación: enlace de vuelta a `/` y ThemeToggle funcionan igual.
+
+### Observaciones
+- El branding del panel izquierdo se compuso con la misma imagen del logo (`logo-badge.png`) y el mismo nombre/tagline que el componente `Logo`, pero en disposición horizontal para adaptarse al gradiente. No se creó una marca nueva.
+- No fueron necesarios cambios en archivos globales compartidos.
+
+### Pendientes
+- Etapa 3: Dashboard y experiencia del Residente.
+
+---
