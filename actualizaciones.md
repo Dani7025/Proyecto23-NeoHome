@@ -178,3 +178,48 @@ NINGUNO. Consultas a supabase (`usuarios`, `unidades`, `pagos`, relación `compr
 - Etapa 3B — Reportar Pago.
 
 ---
+
+## 2026-09-19 — Etapa 3B: Reportar Pago
+
+### Objetivo
+Rediseño visual del flujo de Reportar Pago para que se sienta simple, seguro, inteligente, moderno y confiable, sin modificar la lógica existente ni la integración con n8n/Supabase.
+
+### Archivos modificados
+- app/residente/reportar/page.tsx
+
+### Cambios visuales
+- Pantalla de subida premium: zona de carga con borde punteado de marca, icono de documento en gradiente `brand→navy`, título, explicación breve, chips JPG/PNG/PDF y botón "Seleccionar archivo" con input oculto (sin agregar lógica de drag & drop inexistente).
+- Archivo seleccionado: tarjeta con icono de documento, nombre, tipo y tamaño formateado (KB/MB), indicador "Listo para enviar" (verde) y botón "Cambiar archivo"; en mobile el indicador pasa a texto compacto.
+- Botón "Enviar comprobante": color de marca `#463181` con hover, icono SVG de subida, `disabled` suave cuando no hay archivo.
+- Estado de procesamiento: panel dedicado con anillo giratorio (spinner SVG no numérico), icono de documento pulsante, "Analizando con IA..." y tres puntos animados con retardo (sin porcentajes ni progreso simulado).
+- Resultado con 4 tratamientos visuales diferenciados: conciliado (verde + check), abono_parcial (azul royal + billete), discrepancia (ámbar + triángulo), en_revision (neutro slate + reloj, no se presenta como rechazo).
+- "Información detectada": tarjeta destacada con monto Bs y equivalente USD, y filas secundarias para referencia y fecha (se muestran solo si existen).
+- Botones finales conservados: "Reportar otro" (outline neutro) e "Ir al inicio" (marca púrpura), mismas rutas y comportamiento.
+- Error convertido en alerta visual elegante (icono de alerta SVG + fondo/borde rojo), sin modificar su contenido ni lógica.
+- Enlace "Volver" con icono SVG de flecha y hover de marca, manteniendo ruta `/residente`.
+- Nota de confianza inferior del flujo: "Procesado de forma segura" + "Conciliación asistida por IA" con iconos SVG.
+- Todos los emojis eliminados (📎 ✅ 💰 ⚠️ ❌ y "←") y sustituidos por iconografía SVG inline consistente.
+
+### Cambios funcionales
+NINGUNO. Se conservan exactamente: `WEBHOOK_URL`, `handleUpload` completo (auth, consulta de unidad, subida a Storage, nombre del archivo, inserción en `comprobantes`, `imagen_url`/`unidad_id`/`estado_extraccion`, llamada al webhook de n8n con `comprobante_id`/`imagen_url`/`unidad_id`, captura del resultado, `monto_extraido`/`monto_usd`/`referencia`/`fecha`/`mensaje`), estados, `loading`, `error`. Solo cambió el JSX visual y las clases.
+
+### Validaciones
+- Selección de archivo: se mantiene el `input` con `accept` original y el mismo `onChange`.
+- Loading: `subiendo` conserva su lógica; solo cambia la presentación visual.
+- Error: se muestran los mensajes originales en alerta elegante.
+- Conciliado / Abono parcial / Discrepancia / En revisión: 4 escenarios intactos con presentaciones diferenciadas.
+- Responsive: pantalla centrada `max-w-xl`, sin overflow; botones apilados en mobile, tarjeta de resultado flexible, upload accesible en pantallas pequeñas.
+- Light mode: superficies claras y jerarquía consistente.
+- Dark mode: variantes `dark:` en toda la pantalla con contraste correcto.
+- Navegación: "Volver", "Reportar otro" e "Ir al inicio" conservan rutas y comportamiento.
+- `npm run build` exitoso, TypeScript sin errores.
+
+### Observaciones
+- Se corrigió el uso de `royal-950` (inexistente en la paleta) por `royal-900` en el fondo oscuro del escenario abono_parcial.
+- La paleta `royal` solo llega hasta `900`; se usaron tonos existentes para los fondos oscuros (`royal-900`).
+- No se tocaron archivos globales ni otras pantallas.
+
+### Pendientes
+Etapa 4 — Administrador
+
+---
