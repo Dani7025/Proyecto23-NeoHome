@@ -387,3 +387,60 @@ NINGUNO. `cargar()`, `handleResolver()` (conciliado: pago→conciliado + mensaje
 Etapa 4D — Morosidad
 
 ---
+
+## 2026-09-19 — Etapa 4D: Morosidad
+
+### Objetivo
+Rediseñar visualmente la pantalla de morosidad.
+
+### Archivo modificado
+- app/dashboard/morosidad/page.tsx
+
+### Cambios visuales
+- Nuevo encabezado: kicker "Monitoreo financiero", título "Morosidad" y descripción contextual "Revisa las unidades con saldo pendiente y prioriza la gestión de cuentas."
+- Nueva composición visual: banda de introducción discreta con icono teal, rótulo "Resumen de cuentas" y explicación breve del ordenamiento; se mantiene como zona discreta, no se convierte en un segundo dashboard.
+- Resumen derivado de datos existentes: pill con cantidad de unidades con deuda y pill (único acento rojo persistente de la pantalla) con el total adeudado, ambos calculados con `reduce` sobre el array `morosos` ya cargado. Sin consultas nuevas ni valores inventados.
+- Rediseño de tabla: encabezados en mayúsculas espaciadas y discretos, filas respiradas (`py-4`), hover sutil, bordes finos y una sola capa de divisores.
+- Rediseño de unidad: badge sutil neutro (slate) con icono de edificio y tipografía semibold; se eliminó el rojo que antes ocupaba la celda completa.
+- Rediseño de residente: avatar de inicial en gradiente `brand→navy` (generado solo a partir del nombre existente, sin imágenes ni consultas) + nombre con jerarquía clara.
+- Rediseño de saldo: etiqueta pequeña "Saldo pendiente" con indicador de deuda (punto rojo) y monto grande en negrita `tabular-nums`; el monto real sigue viniendo de `u.saldo_deudor` con el mismo formato `$X.XX`.
+- Priorización visual: la deuda más alta aparece primero (mismo orden de la consulta); el monto destaca por jerarquía tipográfica. NO se crearon categorías Baja/Media/Alta/Crítica ni reglas de morosidad.
+- Rediseño de acción: "Enviar recordatorio" como acción secundaria (outline neutro, icono de correo, focus visible), nunca el CTA principal. El botón NO tiene funcionalidad.
+- Empty state: positivo y premium con icono de check circular en verde, mensaje original conservado ("No hay unidades morosas.") y frase de estado al día.
+- Loading: skeleton con shimmer (`animate-pulse`) en encabezado y filas, más tarjeta con spinner de marca y el texto "Cargando..." conservado.
+- Responsive: en desktop/tablet la tabla (con scroll horizontal si hace falta); en mobile la información se presenta como cards apiladas sin eliminar dato alguno.
+- Dark mode: superficies `dark:` diferenciadas en banda, tabla, pills y cards; contraste y jerarquía conservados.
+- Iconografía: SVG inline (edificio, correo, check, spinner) — sin emojis, sin librerías.
+
+### Cambios funcionales
+NINGUNO. `cargar()`, la consulta a `unidades` (select `numero_apartamento, saldo_deudor, usuarios(nombre)`, `gt('saldo_deudor', 0)`, `order('saldo_deudor', { ascending: false })`), `setMorosos`, `setLoading`, la serialización por índice y todas las interacciones permanecen idénticas. Solo cambió el JSX visual y las clases.
+
+### Importante
+El botón "Enviar recordatorio" permanece SIN funcionalidad porque actualmente no existe lógica implementada para esa acción. No se añadió `onClick`, email, WhatsApp, SMS, n8n, Supabase, API ni modal de confirmación. Es solo presentación, igual que en el archivo original.
+
+### Datos preservados
+- numero_apartamento
+- saldo_deudor
+- nombre del residente
+- ordenamiento por saldo descendente
+
+### Validaciones
+- Carga de datos: las unidades morosas se siguen cargando con la misma consulta Supabase.
+- Empty state: la condición `morosos.length === 0` y el mensaje "No hay unidades morosas." se conservan.
+- Tabla: montos con `$X.XX` (`toFixed(2)`), residente con `u.usuarios?.nombre ?? '-'`, unidad "Apt {numero_apartamento}".
+- Responsive: desktop/tablet tabla con scroll horizontal; mobile cards apiladas sin pérdida de información.
+- Dark mode: light y dark con contrastes, jerarquía y legibilidad correctos.
+- Datos reales: solo `numero_apartamento`, `saldo_deudor` y nombre del residente (y valores derivados directamente de ellos).
+- Accesibilidad: focus visible en el botón (`focus-visible:outline`), iconos con `aria-hidden` y acompañados por texto, contraste adecuado, no se depende solo del color (la etiqueta "Saldo pendiente" es texto, el punto de color es refuerzo).
+- `npm run build` exitoso, TypeScript sin errores.
+
+### Observaciones
+- El total adeudado y la cantidad de morosos del resumen se derivan del array ya cargado; no hay consultas nuevas, ni estado nuevo, ni métricas inventadas.
+- El rojo se limita al indicador de deuda (punto), a la etiqueta pequeña del saldo y a la pill del total adeudado; el resto usa neutros + paleta NeoHome (púrpura, navy, teal), respetando la distribución 80/15/5.
+- No se añadieron búsquedas, filtros, exportaciones, gráficos, historial, fechas de vencimiento, días de atraso ni categorías de morosidad.
+- La vista mobile usa cards apiladas mediante clases `hidden sm:block` / `sm:hidden` (datos idénticos en ambos casos).
+
+### Pendientes
+Etapa 4E — Gestión de Alícuotas
+
+---
