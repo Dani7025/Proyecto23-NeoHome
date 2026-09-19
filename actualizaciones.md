@@ -271,3 +271,64 @@ NINGUNO. Autenticación, consulta de `usuarios`, validación de rol `admin`, `se
 Etapa 4B — Dashboard financiero
 
 ---
+
+## 2026-09-19 — Etapa 4B: Dashboard Financiero
+
+### Objetivo
+Rediseñar visualmente el Dashboard financiero del administrador como un centro de control financiero premium, conservando la lógica y los datos reales.
+
+### Archivo modificado
+- app/dashboard/page.tsx
+
+### Cambios visuales
+- Nueva jerarquía visual: encabezado con kicker "Panel del administrador", título "Resumen financiero" y subtítulo "Control económico del condominio · Período del mes en curso".
+- Nueva composición del dashboard: fondo con glows radiales sutiles (brand/teal/lavanda a baja opacidad) que envuelven el contenido sin competir con las tarjetas.
+- Rediseño de KPIs con jerarquía entre ellos:
+  - Total cobrado → KPI principal de doble ancho, tarjeta elevada con decoración abstracta (glow brand, forma geométrica rotada), icono en gradiente `brand→navy`, monto extragrande y contexto "Recaudación actual · Pagos conciliados del mes".
+  - % de morosidad → KPI de atención con icono ámbar localizado (recuadro `amber`) y contexto "Unidades con saldo pendiente"; sin clasificaciones inventadas ni barras ficticias.
+  - Alícuota promedio → KPI operativo con icono azul royal y contexto "Alícuotas generadas en el mes".
+  - Tasa BCV → tarjeta especial de ancho completo (configurable) con icono teal y acento de identidad.
+- Rediseño de tasa BCV (misma funcionalidad): estado normal con valor grande teal y botón "Editar" discreto; estado edición con input premium (`focus:ring` teal), botón "Guardar" en `#463181` (con spinner "Guardando" mientras `guardandoTasa`) y botón "Cancelar" con icono X; feedback de éxito/error en alerta elegante con iconos SVG.
+- Mejoras de loading: skeleton UI que replica la composición (header + grilla de KPIs + franja tasa), con el mismo estado `loading`.
+- Mejoras de errores: alertas con fondo/borde/icono diferenciado (verde éxito, rojo error), conservando los mensajes originales.
+- Nueva iconografía: SVG inline (banknote, trending-down, calculator, exchange, edit, x, check, alert-triangle, spinner, info) en lugar de emojis.
+- Sección informativa descriptiva: "Cómo se compone este resumen" con las 3 métricas explicadas (contenido derivado de los datos existentes, sin estadísticas nuevas).
+- Responsive: grilla 1 columna en mobile, 2 en tablet (total a doble ancho), 4 en desktop con jerarquía; la tasa BCV es totalmente usable en todos los tamaños.
+- Dark mode: superficies `dark:` diferenciadas, glows atenuados y contraste correcto; no es una inversión simple.
+
+### Cambios funcionales
+NINGUNO. Estados, `cargarTasa`, consultas de `configuracion`/`pagos`/`unidades`/`alicuotas`, filtros, cálculos, `guardarTasa` (update, validación, mensajes "✓ Tasa actualizada"/"Error: ..."/"Ingresa un valor válido."), `setEditandoTasa`, `setMensajeTasa`, `setLoading` y valores con `toFixed(2)` permanecen idénticos. Solo cambió la presentación.
+
+### Datos preservados
+- Total cobrado del mes (pagos conciliados).
+- Porcentaje de morosidad (unidades con saldo pendiente).
+- Alícuota promedio (alícuotas del mes).
+- Tasa BCV (configuración editable).
+
+### Validaciones
+- Total cobrado aparece correctamente con los datos reales.
+- Morosidad aparece correctamente.
+- Alícuota promedio aparece correctamente.
+- Tasa BCV aparece correctamente.
+- Editar tasa funciona.
+- Guardar tasa funciona (spinner mientras guarda).
+- Cancelar funciona (vuelve al valor de la BD con `cargarTasa`).
+- Validación de valor inválido funciona ("Ingresa un valor válido.").
+- Mensaje de éxito funciona ("✓ Tasa actualizada").
+- Mensaje de error funciona ("Error: ...").
+- Loading (skeleton) funciona.
+- Supabase sigue funcionando (sin nuevas consultas).
+- El layout administrativo sigue funcionando (no se modificó).
+- Navegación sigue funcionando.
+- `npm run build` exitoso, TypeScript sin errores.
+
+### Observaciones
+- El periodo "mes en curso" es textual/derivado de los filtros existentes; no se añadió una fecha inventada.
+- La sección informativa es contenido descriptivo del cálculo real, sin datos nuevos.
+- La morosidad mantiene su valor sin clasificación inventada (no "baja/media/alta").
+- El feedback de éxito conserva el mensaje original con "✓" (el icono mostrado es un SVG derivado del mismo `startsWith('✓')`).
+
+### Pendientes
+Etapa 4C — Conciliación de pagos
+
+---
