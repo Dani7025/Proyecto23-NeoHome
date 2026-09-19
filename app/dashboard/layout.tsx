@@ -287,7 +287,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <button
             onClick={() => setMenuOpen(true)}
             aria-label="Abrir menú"
-            className="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
+            className="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
           >
             <MenuIcon />
           </button>
@@ -308,7 +308,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 onClick={() => setPanelOpen(!panelOpen)}
                 aria-expanded={panelOpen}
                 aria-label="Abrir menú de perfil"
-                className="flex items-center gap-2.5 sm:gap-3 p-1 pr-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
+                className="flex items-center gap-2.5 sm:gap-3 p-1 pr-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
               >
                 <span className="hidden sm:flex flex-col items-end leading-tight">
                   <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{nombre}</span>

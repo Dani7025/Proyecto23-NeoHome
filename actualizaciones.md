@@ -557,3 +557,51 @@ NINGUNO. `cargarUnidades()` (`.from('unidades').select('id, numero_apartamento, 
 
 ### Pendientes
 Etapa 5 — Auditoría visual final
+
+## 2026-09-19 — Etapa 5: Auditoría Visual Final
+
+### Objetivo
+Auditar NeoHome completo como un solo producto (Landing, Login, Dashboard Residente, Panel Administrador) y corregir únicamente las inconsistencias visuales reales entre pantallas. Cero funcionalidad, cero backend.
+
+### Archivos modificados
+- app/login/page.tsx
+- app/dashboard/layout.tsx
+- app/dashboard/conciliacion/page.tsx
+
+### Consistencia visual corregida
+- Inputs del login normalizados al patrón del sistema: foco `focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20` (antes `ring-4 ring-brand-600/10`), `dark:bg-slate-700`, `text-slate-800 dark:text-white`, `text-sm`, `transition-shadow` y `placeholder:text-slate-400` (igual que conciliación, alícuotas y residentes).
+- CTA del login alineado con los CTA del panel: `py-3.5`, foco `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500` y spinner `SpinnerIcon` radial del sistema (antes `py-3` con ring+offset y spinner de arco circular en SVG inline).
+- Focus visible normalizado en los 3 botones residuales del framework: menú hamburguesa y menú de perfil del layout admin y botón de cierre del modal de conciliación (antes `ring-2 ring-brand-500`; ahora `outline-2 outline-offset-2 outline-brand-500`, idéntico al resto del producto).
+
+### Componentes normalizados
+- Foco de inputs: patrón único en todo el producto (`focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20`).
+- Foco visible de botones: patrón único en todo el producto (`outline-2 outline-offset-2 outline-brand-500`); ya no conviven ring y outline.
+- Spinner de CTA: `SpinnerIcon` (8 rayos, `animate-spin`, `w-4 h-4`) en todos los botones de envío.
+- Superficies de inputs en dark mode: `dark:bg-slate-700` sobre cards `dark:bg-slate-800` en todas las pantallas.
+
+### Cambios funcionales
+NINGUNO. Solo strings de clases Tailwind y sustitución de un bloque SVG inline por el componente `SpinnerIcon` (visualmente idéntico al resto del producto). Sin tocar lógica, componentes de backend, Supabase ni n8n.
+
+### Integridad funcional
+- Login: handlers y flujo `signInWithPassword` → consulta `usuarios.rol` → redirección intactos.
+- Layout admin: navegación, logout, panel de perfil, cambio de foto y guardado intactos.
+- Conciliación: cierre del modal (`setSelected(null)` condicionado a `!processing`) intacto.
+- Verificado por `git diff`: todos los hunks son de clases/JSX; ninguno toca lógica.
+
+### Validaciones
+- `npm run build` exitoso (TypeScript sin errores, rutas estáticas generadas).
+- `grep` de patrones antiguos (`focus:ring-4`, `focus:border-brand-600`, `focus:ring-brand-600`, `focus-visible:ring`) sobre `app/`: sin resultados.
+- Light y dark mode revisados (contraste de inputs sobre tarjetas correctos).
+- Responsive sin cambio de estructura (solo clases de foco, altura y espaciado de texto).
+
+### Problemas encontrados
+- Inputs de login con foco distinto al resto (ring grueso color brand-600) y superficie `dark:bg-slate-800` en vez de `dark:bg-slate-700`, texto `text-slate-900`, sin `text-sm`, `transition-all` en vez de `transition-shadow`.
+- Botón de login con altura menor (`py-3`) y foco ring+offset distinto al CTA del sistema.
+- Spinner del botón de login de un estilo distinto (arco circular) al usado en todo el panel.
+- Tres botones del framework admin (menú, perfil, cerrar modal de conciliación) con focus-visible tipo ring mientras el resto usa outline.
+
+### Problemas corregidos
+- Todos los anteriores (ver Consistencia visual corregida).
+
+### Pendientes
+NINGUNO.

@@ -87,6 +87,14 @@ function CalculatorIcon() {
   );
 }
 
+function SpinnerIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+    </svg>
+  );
+}
+
 const HIGHLIGHTS = [
   { icon: SparkleIcon, text: 'Conciliación automática con IA' },
   { icon: ShieldIcon, text: 'Control de morosidad en tiempo real' },
@@ -229,7 +237,7 @@ export default function LoginPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="admin@condominio.com"
                       required
-                      className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-all outline-none focus:border-brand-600 dark:focus:border-brand-500 focus:ring-4 focus:ring-brand-600/10 dark:focus:ring-brand-500/15"
+                      className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-shadow placeholder:text-slate-400"
                     />
                   </div>
                 </div>
@@ -249,7 +257,7 @@ export default function LoginPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
                       required
-                      className="w-full pl-11 pr-12 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-all outline-none focus:border-brand-600 dark:focus:border-brand-500 focus:ring-4 focus:ring-brand-600/10 dark:focus:ring-brand-500/15"
+                      className="w-full pl-11 pr-12 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-shadow placeholder:text-slate-400"
                     />
                     <button
                       type="button"
@@ -278,14 +286,9 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 active:bg-brand-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold shadow-card hover:shadow-card-hover transition-all outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 active:bg-brand-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold shadow-card hover:shadow-card-hover transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
                 >
-                  {loading && (
-                    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-90" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-                    </svg>
-                  )}
+                  {loading && <SpinnerIcon />}
                   {loading ? 'Ingresando...' : 'Iniciar sesión'}
                 </button>
 
