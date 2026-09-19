@@ -1,8 +1,86 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
+  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Primario de marca — Púrpura */
+  --color-brand-50: #f6f4fb;
+  --color-brand-100: #ece8f7;
+  --color-brand-200: #dbd2ef;
+  --color-brand-300: #beb0e2;
+  --color-brand-400: #9d88cd;
+  --color-brand-500: #6d54a6;
+  --color-brand-600: #463181;
+  --color-brand-700: #3a2a6c;
+  --color-brand-800: #2d2155;
+  --color-brand-900: #221941;
+
+  /* Estructura / profundidad — Azul profundo */
+  --color-navy-50: #edf1fa;
+  --color-navy-100: #dce4f5;
+  --color-navy-200: #b9c9eb;
+  --color-navy-300: #8fa5dd;
+  --color-navy-400: #6680cc;
+  --color-navy-500: #3e5cb0;
+  --color-navy-600: #082674;
+  --color-navy-700: #072061;
+  --color-navy-800: #06194d;
+  --color-navy-900: #05133a;
+
+  /* Acciones secundarias — Azul */
+  --color-royal-50: #eef2fb;
+  --color-royal-100: #dbe5f7;
+  --color-royal-200: #b8ccef;
+  --color-royal-300: #90ace4;
+  --color-royal-400: #6185d3;
+  --color-royal-500: #4268bd;
+  --color-royal-600: #3365ca;
+  --color-royal-700: #2a51a8;
+  --color-royal-800: #224186;
+  --color-royal-900: #1b3368;
+
+  /* Acento — Lavanda */
+  --color-lavender-50: #f7f5fb;
+  --color-lavender-100: #efebf8;
+  --color-lavender-200: #ded7f0;
+  --color-lavender-300: #c4b8e5;
+  --color-lavender-400: #ad9cdb;
+  --color-lavender-500: #9681d9;
+  --color-lavender-600: #7a63c4;
+  --color-lavender-700: #634fa1;
+  --color-lavender-800: #4f3f82;
+  --color-lavender-900: #3f336a;
+
+  /* Información / positivos — Teal */
+  --color-teal-50: #edf6f8;
+  --color-teal-100: #d9edf1;
+  --color-teal-200: #b2dbe3;
+  --color-teal-300: #85c2cd;
+  --color-teal-400: #55a3b2;
+  --color-teal-500: #3a8b9d;
+  --color-teal-600: #2c7b91;
+  --color-teal-700: #16606f;
+  --color-teal-800: #0f4456;
+  --color-teal-900: #0b3a4a;
+  --color-teal-950: #062430;
+
+  /* Sombras */
+  --shadow-card: 0 1px 2px 0 rgb(16 24 40 / 0.04), 0 1px 3px 0 rgb(16 24 40 / 0.06);
+  --shadow-card-hover: 0 4px 12px -2px rgb(16 24 40 / 0.08), 0 2px 4px -2px rgb(16 24 40 / 0.04);
+  --shadow-pop: 0 8px 24px -6px rgb(16 24 40 / 0.12), 0 4px 8px -4px rgb(16 24 40 / 0.08);
+}
+
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background-color: var(--color-brand-600);
+  color: #fff;
 }
 
 @keyframes fadeIn {
@@ -11,4 +89,12 @@ body {
 }
 .fade-in {
   animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up {
+  animation: fadeInUp 0.5s ease-out both;
 }
