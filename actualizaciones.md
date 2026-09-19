@@ -444,3 +444,57 @@ El botón "Enviar recordatorio" permanece SIN funcionalidad porque actualmente n
 Etapa 4E — Gestión de Alícuotas
 
 ---
+
+## 2026-09-19 — Etapa 4E: Gestión de Alícuotas
+
+### Objetivo
+Rediseñar visualmente la gestión y generación de alícuotas.
+
+### Archivo modificado
+- app/dashboard/alicuotas/page.tsx
+
+### Cambios visuales
+- Nuevo encabezado: kicker "Administración financiera", título "Gestión de alícuotas" y descripción contextual sobre la distribución proporcional por coeficiente.
+- Rediseño del formulario: tarjeta "Registrar gasto común" con subtítulo explicativo y dos campos etiquetados (Descripción / Monto total), cada uno con hint bajo el label, `htmlFor`/`id` para accesibilidad y foco con ring de marca.
+- Rediseño del campo de monto: input `type="number"` con prefijo "$", tipografía grande y negrita `tabular-nums`, resaltando visualmente el "gasto total del condominio".
+- Rediseño del CTA: botón principal `#463181` (brand) con icono SVG de calculadora, hover/elevación `shadow-card` y focus visible; en loading muestra spinner + "Calculando distribución...".
+- Nuevo estado de procesamiento: botón `disabled` con spinner SVG (misma lógica `generando`).
+- Nuevo tratamiento de errores: alerta premium con icono de alerta, fondo rojo sutil, borde y `role="alert"` (mismos mensajes de la lógica).
+- Nueva explicación visual del cálculo: panel "Cómo se distribuye" con la fórmula `monto × coeficiente = monto por unidad`, pasos numerados (Gasto común → Coeficiente → Monto asignado) y nota de marca "NeoHome hace el cálculo por ti."
+- Rediseño de distribución: sección de resultado con kicker "Resultado final", título "Distribución generada", pills de confirmación y conteo de unidades (derivados solo de `distribucion`).
+- Rediseño de tabla: headers discretos en mayúsculas espaciadas, filas respiradas, hover sutil, unidad como badge neutro con icono de propiedad, coeficiente `tabular-nums`, monto asignado en negrita alineado a la derecha (`$X.XX` con `toFixed(2)`).
+- Responsive: en desktop/tablet la tabla premium; en mobile las filas se transforman en cards apiladas sin eliminar información.
+- Dark mode: superficies `dark:` diferenciadas en formulario, panel explicativo, tabla, pills y alerta.
+- Nueva iconografía: SVG inline (lápiz, calculadora, alerta, check, spinner, propiedad) — sin emojis ni librerías.
+
+### Cambios funcionales
+NINGUNO. `generarAlicuotas()` permanece byte a byte idéntico: validación de monto, consulta de unidades, generación del mes, cálculo `monto × coeficiente`, inserción en `alicuotas`, actualización de `saldo_deudor`, construcción de la distribución y limpieza del formulario.
+
+### Lógica financiera preservada
+- Cálculo monto × coeficiente (`monto * u.coeficiente`, `toFixed(2)`)
+- Inserción en alicuotas (`.from('alicuotas').insert(filas)`)
+- Actualización de saldo_deudor (`.from('unidades').update({ saldo_deudor: Number((u.saldo_deudor + montoAsignado).toFixed(2)) })`)
+- Generación del mes (`new Date().toLocaleDateString('es-VE', { month: 'long', year: 'numeric' })`)
+- Validación de monto (`!monto || monto <= 0`)
+- Estados actuales: `descripcion`, `montoTotal`, `distribucion`, `generando`, `error`
+
+### Validaciones
+- Monto válido: genera distribución y limpia `descripcion`/`montoTotal` al terminar.
+- Monto inválido: muestra "Ingresa un monto válido." (texto intacto) en la nueva alerta premium.
+- Generación: mismo flujo real contra Supabase.
+- Loading: `disabled` + spinner + texto "Calculando distribución...".
+- Distribución: aparece solo cuando `distribucion.length > 0`; confirmación derivada de ese estado (sin estado nuevo).
+- Limpieza del formulario: misma (formulario queda listo mientras el resultado permanece visible).
+- Tabla: `d.apartamento`, `d.coeficiente`, `d.monto.toFixed(2)` sin cambios.
+- Responsive: desktop/laptop/tablet tabla con scroll si hace falta; mobile campos apilados y filas como cards.
+- Dark mode: contrastes, jerarquía y legibilidad correctos en ambos temas.
+- `npm run build` exitoso, TypeScript sin errores.
+
+### Observaciones
+- El conteo de unidades del resumen se deriva únicamente de `distribucion.length`.
+- No se agregaron nuevas operaciones: ni editar/eliminar alícuota, historial, exportación, correos, filtros, búsquedas, calendario ni métodos nuevos de distribución.
+- Los mensajes de error y los textos generados por la lógica no cambiaron.
+- Se conservó el comentario original "// Sumar cada alícuota al saldo deudor de su unidad" y la estructura de `generarAlicuotas()` sin refactorizar.
+
+### Pendientes
+Etapa 4F — Gestión de Residentes
