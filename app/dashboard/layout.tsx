@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/conciliacion', label: 'Conciliación', icon: '🧾' },
   { href: '/dashboard/morosidad', label: 'Morosidad', icon: '⚠️' },
   { href: '/dashboard/alicuotas', label: 'Alícuotas', icon: '🧮' },
+  { href: '/dashboard/residentes', label: 'Residentes', icon: '👥' },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
