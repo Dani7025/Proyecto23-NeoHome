@@ -132,3 +132,49 @@ NINGUNO. `signInWithPassword`, consulta de la tabla `usuarios`, validación de r
 - Etapa 3: Dashboard y experiencia del Residente.
 
 ---
+
+## 2026-09-19 — Etapa 3A: Dashboard Residente
+
+### Objetivo
+Rediseño visual de la experiencia principal del residente (layout y dashboard de saldo/historial).
+
+### Archivos modificados
+- app/residente/layout.tsx
+- app/residente/page.tsx
+- actualizaciones.md (esta entrada)
+
+### Cambios visuales
+- Header rediseñado: fijo con `backdrop-blur`, marca NeoHome consistente con la landing, nombre del residente con rol, avatar circular con inicial en gradiente `brand→navy`, ThemeToggle y logout como icono SVG (antes emoji 🚪) con hover rojo.
+- Bienvenida visual: titular "Hola, este es el resumen de tu cuenta" + subtítulo institucional.
+- Tarjeta finananciera premium: gradiente `brand→navy` con glows radiales, icono residencial SVG, label "Saldo actual pendiente" + apartamento, saldo de gran jerarquía tipográfica con `tabular-nums` y CTA principal "Reportar Pago" en blanco sobre la tarjeta (alto contraste y mucha presencia).
+- Indicador visual de estado según saldo (sin cambiar datos ni cálculos): si saldo > 0 muestra pill ámbar "Saldo pendiente"; si saldo es 0 muestra pill verde "Cuenta al día"; mientras carga muestra estado intermedio.
+- Historial de pagos elegante: cada pago con barra lateral de color según estado, badge de estado con punto de color, fecha, monto Bs principal, equivalente USD, referencia y mensaje, con jerarquía clara y contador de pagos.
+- Estados actualizados visualmente: conciliado (verde), abono_parcial (azul royal), discrepancia (ámbar), en_revision (ámbar), rechazado (rojo), pendiente (gris). Se añadió la entrada `pendiente` al mapa de estilos (antes el fallback caía a rechazado).
+- Loading reemplazado por skeleton UI (sin llamadas adicionales, mismo `loadingPagos`).
+- Empty state profesional con icono SVG, título, descripción y CTA "Reportar Pago" sin agregar funcionalidades.
+- Iconografía: se reemplazaron emojis por SVG (logout, reportar pago, residencia, check, arrow).
+
+### Cambios funcionales
+NINGUNO. Consultas a supabase (`usuarios`, `unidades`, `pagos`, relación `comprobantes.unidad_id`, orden por fecha), validación de sesión, rol residente, redirecciones, logout, y estados `saldo`/`pagos`/`loadingPagos` permanecen idénticos. Solo se cambió el JSX visual y las clases.
+
+### Validaciones
+- `npm run build` exitoso, TypeScript sin errores.
+- Desktop: tarjeta con CTA a la derecha y header completo.
+- Tablet/Mobile: tarjeta apilada, CTA accesible a ancho completo, header compacto con avatar (el nombre se oculta en pantallas pequeñas), sin overflow horizontal.
+- Light mode: superficies claras y jerarquía sobre fondo `slate-50`.
+- Dark mode: variantes `dark:` en toda la pantalla, buena legibilidad y contraste.
+- Historial de pagos: todos los campos (estado, fecha, montos, referencia, mensaje) se siguen mostrando.
+- Estados de pago: los valores lógicos no cambiaron; solo la presentación visual.
+- Botón Reportar Pago: conserva `href="/residente/reportar"`.
+- Loading: skeleton con el mismo estado `loadingPagos`.
+- Empty state: la información "Aún no has reportado pagos." se conserva.
+- Logout y autenticación: funciones intactas.
+
+### Observaciones
+- Se añadió `pendiente` como estado visual gris dentro del mapa de presentación porque el fallback anterior representaba casos no mapeados como rechazado (rojo). Ningún dato cambió; solo la representación.
+- No fueron necesarios cambios en archivos globales ni en otras páginas.
+
+### Pendientes
+- Etapa 3B — Reportar Pago.
+
+---
