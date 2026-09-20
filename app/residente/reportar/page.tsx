@@ -104,15 +104,37 @@ function formatBytes(bytes: number) {
   return `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
+const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'application/pdf'];
+
 export default function ReportarPagoPage() {
   const [file, setFile] = useState<File | null>(null);
   const [subiendo, setSubiendo] = useState(false);
   const [resultado, setResultado] = useState<Resultado | null>(null);
   const [error, setError] = useState('');
 
+  function handleFileChange(selected: File | null) {
+    setError('');
+    if (!selected) {
+      setFile(null);
+      return;
+    }
+    if (!TIPOS_PERMITIDOS.includes(selected.type)) {
+      setError('Formato no permitido. Solo se aceptan archivos JPG, PNG o PDF.');
+      setFile(null);
+      return;
+    }
+    setFile(selected);
+  }
+
   async function handleUpload() {
     if (!file) return;
     setError('');
+
+    if (!TIPOS_PERMITIDOS.includes(file.type)) {
+      setError('Formato no permitido. Solo se aceptan archivos JPG, PNG o PDF.');
+      return;
+    }
+
     setSubiendo(true);
 
     const { data: authData } = await supabase.auth.getUser();
@@ -398,7 +420,7 @@ export default function ReportarPagoPage() {
                 <input
                   type="file"
                   accept="image/jpeg,image/png,application/pdf"
-                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                  onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
                   className="sr-only"
                 />
               </label>
@@ -431,7 +453,7 @@ export default function ReportarPagoPage() {
               <input
                 type="file"
                 accept="image/jpeg,image/png,application/pdf"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
                 className="sr-only"
               />
             </label>
