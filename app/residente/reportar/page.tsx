@@ -164,7 +164,6 @@ export default function ReportarPagoPage() {
       return;
     }
 
-    // Llamar al webhook de n8n con los 3 datos
     try {
       const res = await fetch(WEBHOOK_URL, {
         method: 'POST',
@@ -196,7 +195,6 @@ export default function ReportarPagoPage() {
     setSubiendo(false);
   }
 
-  // Vista de resultado (4 escenarios)
   if (resultado) {
     const estilo = (() => {
       switch (resultado.estado) {
@@ -292,7 +290,18 @@ export default function ReportarPagoPage() {
                   <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 px-4 py-3">
                     <p className="text-xs text-slate-500 dark:text-slate-400">Fecha de pago</p>
                     <p className="mt-0.5 font-semibold text-slate-800 dark:text-white">
-                      {new Date(resultado.fecha).toLocaleDateString('es-VE', { day: '2-digit', month: 'long', year: 'numeric' })}
+                      {(() => {
+                        const f = resultado.fecha;
+                        if (!f) return '—';
+                        if (/^\d{4}-\d{2}-\d{2}$/.test(f)) {
+                          const [y, m, d] = f.split('-');
+                          return `${d}/${m}/${y}`;
+                        }
+                        if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(f)) {
+                          return f;
+                        }
+                        return f;
+                      })()}
                     </p>
                   </div>
                 )}
@@ -319,7 +328,6 @@ export default function ReportarPagoPage() {
     );
   }
 
-  // Vista de subida
   return (
     <div className="max-w-xl mx-auto space-y-6 fade-in">
       <Link
@@ -346,7 +354,7 @@ export default function ReportarPagoPage() {
                 <DocumentIcon />
               </div>
             </div>
-            <h3 className="mt-6 text-lg font-semibold text-slate-900 dark:text-white">Analizando con IA...</h3>
+            <h3 className="mt-6 text-lg font-semibold text-slate-900 dark:text-white">Analizando comprobante...</h3>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               Estamos extrayendo y contrastando los datos de tu comprobante.
             </p>
