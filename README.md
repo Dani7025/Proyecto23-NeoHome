@@ -1,104 +1,277 @@
 # NeoHome — Sistema de Gestión Financiera y Cobranzas
 
-Aplicación web para la gestión financiera de condominios y conjuntos residenciales. Automatiza la conciliación de pagos con IA, controla la morosidad y calcula las alícuotas automáticamente.
+Aplicación web para la gestión financiera de condominios y conjuntos residenciales. NeoHome centraliza la gestión de pagos, comprobantes, morosidad y alícuotas, utilizando automatización e Inteligencia Artificial para reducir procesos manuales.
 
-**Proyecto individual — Ingeniería de Software I — UNEG 2026**
-**Autora:** Angie Urrieta (C.I. 31.538.385)
+**Proyecto individual — Ingeniería de Software I — UNEG 2026**  
+**Autora:** Angie Urrieta
 
 ---
 
-## 🔗 Enlaces
+## Enlaces
 
 | Recurso | URL |
-|---------|-----|
-| 🌐 Aplicación desplegada | https://proyecto23-neo-home.vercel.app |
-| 📦 Repositorio | https://github.com/Dani7025/Proyecto23-NeoHome |
-| ⚙️ Orquestador n8n | https://dani0725.app.n8n.cloud |
-
-### 👤 Cuentas de prueba
-
-| Rol | Email | Contraseña |
-|-----|-------|------------|
-| Administrador | `admin@neohome.com` | `neohome123` |
-| Residente | `residente1@neohome.com` | `neo123` |
+|---|---|
+| Aplicación desplegada | https://proyecto23-neo-home.vercel.app |
+| Repositorio | https://github.com/Dani7025/Proyecto23-NeoHome |
 
 ---
 
-## 🎯 ¿Qué problema resuelve?
+## Problema que resuelve
 
-Los administradores de condominios pierden días revisando manualmente comprobantes de pago enviados por WhatsApp o correo, cruzando visualmente con estados de cuenta bancarios. Esto genera:
+La administración de condominios suele depender de procesos manuales para revisar comprobantes enviados por WhatsApp o correo, controlar la morosidad y calcular los gastos comunes.
 
-- Morosidad acumulada por falta de seguimiento
-- Errores en el cálculo de alícuotas (hojas de cálculo)
-- Déficits de caja para cubrir servicios básicos (seguridad, limpieza, ascensores)
+Esto puede generar:
 
-**NeoHome automatiza los 3 procesos con IA.**
+- Demoras en la conciliación de pagos.
+- Errores en el cálculo de alícuotas.
+- Dificultad para dar seguimiento a la morosidad.
+- Riesgo de inconsistencias en los saldos.
+
+**NeoHome centraliza y automatiza estos procesos mediante reglas de negocio, procesamiento financiero e Inteligencia Artificial.**
 
 ---
 
-## 🏗️ Arquitectura
+## Funcionalidades
+
+### Residente
+
+- Consulta del saldo pendiente.
+- Consulta del apartamento asociado.
+- Historial de pagos.
+- Carga de comprobantes JPG, PNG y PDF.
+- Procesamiento automático del comprobante.
+- Consulta del resultado de conciliación.
+- Visualización de monto, fecha, referencia y moneda detectados.
+
+### Administrador
+
+- Dashboard de resumen financiero.
+- Consulta de recaudación y morosidad.
+- Gestión manual de la tasa BCV.
+- Conciliación y revisión de pagos.
+- Búsqueda y filtrado de comprobantes.
+- Visualización de comprobantes.
+- Resolución manual de pagos.
+- Rechazo de comprobantes.
+- Reporte de morosidad.
+- Generación de alícuotas por coeficiente.
+- Registro de residentes.
+- Asignación de residentes a unidades disponibles.
+
+---
+
+## Arquitectura
 
 ### Stack tecnológico
 
 | Capa | Tecnología |
-|------|-----------|
-| Frontend | Next.js 16 (App Router) + Tailwind CSS |
-| Backend / BaaS | Supabase (Auth, PostgreSQL, Storage) |
+|---|---|
+| Frontend | Next.js 16 + React 19 + TypeScript |
+| UI | Tailwind CSS |
+| Base de datos | Supabase / PostgreSQL |
+| Autenticación | Supabase Auth |
+| Almacenamiento | Supabase Storage |
 | Automatización | n8n Cloud |
-| IA | Google Gemini 3.5 Flash Lite |
+| Inteligencia Artificial | Google Gemini 3.5 Flash Lite |
 | Deploy | Vercel |
 | Control de versiones | GitHub + Git |
 
-### Flujo de automatización
+### Flujo de conciliación
 
-1. Residente sube comprobante desde `/residente/reportar`
-2. Frontend guarda el archivo en Supabase Storage
-3. Frontend llama al webhook de n8n
-4. n8n descarga la imagen y la envía a Gemini
-5. Gemini extrae monto, fecha y referencia en formato JSON
-6. n8n calcula el equivalente en USD con la tasa BCV
-7. Se llama a la función SQL `procesar_pago` (transacción atómica)
-8. Se actualiza el saldo deudor de la unidad
-9. Se devuelve el resultado al frontend
+```text
+Residente
+   ↓
+Sube comprobante
+   ↓
+Supabase Storage
+   ↓
+Registro del comprobante
+   ↓
+Webhook de n8n
+   ↓
+Google Gemini 3.5 Flash Lite
+   ↓
+Extracción de datos
+   ↓
+Validación del pago
+   ↓
+Supabase
+   ↓
+Resultado al residente
+```
+
+El flujo utiliza una arquitectura desacoplada: Next.js inicia el proceso y n8n coordina la extracción, validación y actualización de los datos. :contentReference[oaicite:2]{index=2}
 
 ---
 
-## 🗄️ Base de Datos
+## Estados de pago
+
+| Estado | Descripción |
+|---|---|
+| `conciliado` | El pago cubre la deuda correspondiente. |
+| `abono_parcial` | El pago cubre solo una parte de la deuda. |
+| `en_revision` | El comprobante no pudo validarse o extraerse correctamente. |
+| `rechazado` | El comprobante fue rechazado, por ejemplo por duplicidad o revisión manual. |
+| `discrepancia` | Estado legacy mantenido por compatibilidad. |
+
+---
+
+## Base de datos
+
+NeoHome utiliza PostgreSQL mediante Supabase.
 
 ### Tablas principales
 
-- `usuarios` — id, nombre, email, rol
-- `unidades` — id, numero_apartamento, coeficiente, saldo_deudor, usuario_id
-- `comprobantes` — id, imagen_url, estado_extraccion, unidad_id
-- `alicuotas` — id, mes, monto_total_condominio, monto_unidad, unidad_id
-- `pagos` — id, monto_extraido_ves, tasa_bcv, monto_equivalente_usd, referencia, estado, mensaje
-- `configuracion` — clave, valor (guarda la tasa BCV)
-
-### Estados de un pago
-
-- `conciliado`: pago cubre la deuda completa
-- `abono_parcial`: pago cubre parte
-- `en_revision`: la IA no pudo leer el monto
-- `rechazado`: admin rechaza tras revisión manual
-
-### Seguridad
-
-Row Level Security aplicado a nivel de PostgreSQL. Cada residente solo ve sus propios datos. El admin tiene acceso total.
+- `usuarios` — usuarios administradores y residentes.
+- `unidades` — apartamentos, coeficiente y saldo deudor.
+- `comprobantes` — archivos de comprobantes y su estado.
+- `alicuotas` — distribución de gastos comunes por unidad.
+- `pagos` — transacciones, montos, referencia, tasa BCV y estado.
+- `configuracion` — parámetros configurables, principalmente la tasa BCV.
 
 ---
 
-## 🚀 Setup (instalación local)
+## Seguridad
+
+La base de datos utiliza **Row Level Security (RLS)** para controlar el acceso a la información.
+
+Los residentes deben acceder únicamente a los datos asociados a su propia unidad.
+
+Las credenciales y claves de servicios se manejan mediante variables de entorno y no deben almacenarse en el repositorio. :contentReference[oaicite:6]{index=6}
+
+---
+
+## Setup
 
 ### Requisitos
 
-- Node.js 18.18 o superior
-- Cuenta en Supabase
-- Cuenta en n8n Cloud
-- API key de Google AI Studio
+- Node.js 18.18 o superior.
+- Cuenta de Supabase.
+- Cuenta de n8n Cloud.
+- API Key de Google AI Studio.
 
-### Pasos
+### Instalación
 
-1. Clonar el repositorio:
+#### 1. Clonar el repositorio
+
 ```bash
 git clone https://github.com/Dani7025/Proyecto23-NeoHome.git
 cd Proyecto23-NeoHome
+```
+
+#### 2. Instalar dependencias
+
+```bash
+npm install
+```
+
+#### 3. Configurar variables de entorno
+
+Crear el archivo:
+
+```text
+.env.local
+```
+
+y agregar:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+GEMINI_API_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+```
+
+**Nunca subir `.env.local` al repositorio.**
+
+#### 4. Ejecutar en desarrollo
+
+```bash
+npm run dev
+```
+
+Aplicación disponible en:
+
+```text
+http://localhost:3000
+```
+
+#### 5. Verificar compilación
+
+```bash
+npm run build
+```
+
+---
+
+## Calidad y pruebas
+
+El proyecto contempla pruebas de:
+
+- Interfaz de usuario.
+- Integración entre Next.js, n8n, Gemini y Supabase.
+- Seguridad mediante RLS.
+- Casos límite y validaciones.
+
+Casos principales verificados:
+
+| Prueba | Resultado |
+|---|---|
+| Comprobante con monto correcto | `conciliado` |
+| Referencia duplicada | `rechazado` |
+| Monto menor al saldo | `abono_parcial` |
+| Comprobante ilegible/corrupto | `en_revision` |
+| Generación de alícuotas | Prorrateo por coeficiente |
+| Acceso a otra unidad | Bloqueado mediante RLS |
+
+Durante el desarrollo se identificaron y corrigieron 14 bugs relacionados con archivos, duplicados, RLS, Gemini, Supabase, UUID, fechas, webhook y procesamiento de comprobantes. :contentReference[oaicite:7]{index=7}
+
+---
+
+## Limitaciones conocidas
+
+Actualmente el proyecto no incluye:
+
+- Pasarela de pago directa.
+- Cargos automáticos.
+- Facturación fiscal electrónica.
+- Integración en vivo con la API oficial del BCV.
+
+La tasa BCV se administra manualmente desde el panel administrativo. :contentReference[oaicite:8]{index=8}
+
+---
+
+## Trabajo futuro
+
+Se contemplan como posibles mejoras:
+
+- Notificaciones automáticas al residente.
+- Manejo de pagos parciales multi-cuota.
+- Optimización del consumo de tokens mediante caché semántico.
+- Ampliación de funcionalidades de cobranza.
+- Futuras integraciones bancarias. :contentReference[oaicite:9]{index=9}
+
+---
+
+## Metodología
+
+Proyecto desarrollado bajo metodología **Agile Scrum**, utilizando historias de usuario, backlog priorizado, criterios de aceptación Given-When-Then y entregas iterativas.
+
+Durante el desarrollo se realizaron pruebas, correcciones y ampliaciones progresivas del alcance según los casos de uso identificados. :contentReference[oaicite:10]{index=10}
+
+---
+
+## Autora
+
+**Angie Urrieta**
+
+Ingeniería en Informática  
+Universidad Nacional Experimental de Guayana
+
+Proyecto individual desarrollado para la asignatura **Software I**.
+
+---
+
+## Licencia
+
+Proyecto académico sin fines comerciales.
